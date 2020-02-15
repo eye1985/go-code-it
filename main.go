@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/joho/godotenv"
+	"os"
 	"postgres/database"
+	"postgres/dummyData"
 	"postgres/server"
 )
 
@@ -17,57 +20,25 @@ func cleanup(db *gorm.DB) {
 }
 
 func main() {
-	db := database.Connect()
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+	dbUsername := os.Getenv("DB_USERNAME")
+	dbPassword := os.Getenv("DB_PASSWORD")
+
+	db := database.Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
 	server.Db = db
+
 	defer cleanup(db)
 
 	database.ClearTables(db)
 	database.Migrate(db)
-
-	// DB test
-	typeOfCode := "js"
-	code := "alert(123)"
-
-	database.CreateUser(db, "Arne", "arne@gmail.com", []database.Code{
-		{
-			Name: "My block of codes",
-			Type: &typeOfCode,
-			Code: &code,
-		},
-		{
-			Name: "Block 2",
-		},
-	})
-
-	database.CreateUser(db, "Bjarne", "bjarne@gmail.com", []database.Code{
-		{
-			Name: "My block of codes",
-		},
-	})
-
-	users := []database.User{}
-	codes := []database.Code{}
-
-	database.Query(db, &users)
-	database.Query(db, &codes)
-
-	database.UpdateUser(db, "Bjarne", &users[1], "More block of codes", "hmm", "alert(asdasdasd)")
-	database.UpdateUser(db, "Bjarne", &users[1], "More block of codes 2", "hmm", "alert(asdasdasd)")
-	database.UpdateUser(db, "Bjarne", &users[1], "More block of codes 3", "hmm", "alert(asdasdasd)")
-
-	for _, user := range users {
-		scopedCodes := []database.Code{}
-		database.GetAssociated(db, &user, &scopedCodes)
-
-		fmt.Printf("%v \n", user.Name)
-
-		for _, code := range scopedCodes {
-			if code.Code != nil {
-				fmt.Println(*code.Code)
-			}
-		}
-	}
-	// db test end
+	dummyData.InsertDummyData(db)
 
 	server.StartServer()
 }

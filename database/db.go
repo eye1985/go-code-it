@@ -1,12 +1,13 @@
 package database
 
-import "github.com/jinzhu/gorm"
+import (
+	"fmt"
+	"github.com/jinzhu/gorm"
+)
 
-const dbInfo = "host=127.0.0.1 port=5432 sslmode=disable dbname=codebase user=postgres password=admin"
-const dialect = "postgres"
-
-func Connect() *gorm.DB {
-	db, err := gorm.Open(dialect, dbInfo)
+func Connect(host string, port string, dbname string, user string, pass string) *gorm.DB {
+	dbInfo := fmt.Sprintf("host=%v port=%v sslmode=disable dbname=%v user=%v password=%v", host, port, dbname, user, pass)
+	db, err := gorm.Open("postgres", dbInfo)
 	if err != nil {
 		panic(err)
 	}

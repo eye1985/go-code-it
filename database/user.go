@@ -7,9 +7,9 @@ import (
 
 func CreateUser(db *gorm.DB, name string, email string, codes []Code) error {
 	user := User{
-		Name:  name,
-		Email: email,
-		Codes: codes,
+		Username: name,
+		Email:    email,
+		Codes:    codes,
 	}
 
 	if dbc := db.Create(&user); dbc.Error != nil {
@@ -39,20 +39,26 @@ func GetAssociated(db *gorm.DB, u *User, c *[]Code) {
 	db.Model(u).Related(c)
 }
 
-func UpdateUser(db *gorm.DB, name string, u *User, codeName string, typeName string, code string) {
-	db.Where(&User{Name: name}).First(u)
+func UpdateUser(db *gorm.DB, name string, u *User, codeName string, typeName string, code string) error {
+	if r := db.Where(&User{Username: name}).First(u); r.Error != nil {
+		return r.Error
+	}
 
 	res := append(u.Codes, Code{
-		Name: codeName,
-		Type: &typeName,
-		Code: &code,
+		Title: codeName,
+		Type:  &typeName,
+		Code:  &code,
 	})
 
 	u.Codes = res
-	db.Save(u)
+	if r := db.Save(u); r.Error != nil {
+		return r.Error
+	}
+
+	return nil
 }
 
-func DeleteUser(db *gorm.DB, user *User) error {
+func SoftDeleteUser(db *gorm.DB, user *User) error {
 	if r := db.Delete(user); r.Error != nil {
 		return r.Error
 	}

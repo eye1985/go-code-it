@@ -22,7 +22,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.CreateUser(Db, post.Name, post.Email, nil)
+	err = database.CreateUser(Db, post.Username, post.Email, nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -65,7 +65,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.DeleteUser(Db, &user)
+	err = database.SoftDeleteUser(Db, &user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
