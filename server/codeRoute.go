@@ -63,3 +63,48 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(&code)
 }
+
+func updateUserCode(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userId := params["userId"]
+	codeId := params["codeId"]
+
+	codeTitle := r.FormValue("title")
+	codeType := r.FormValue("type")
+	code := r.FormValue("code")
+
+	var updatedCode database.Code
+
+	if dbs := Db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).Updates(database.Code{
+		Title: codeTitle,
+		Type:  &codeType,
+		Code:  &code,
+	}); dbs.Error != nil {
+		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
+		return
+	} else {
+		dbs.Scan(&updatedCode)
+	}
+
+	w.Header().Set(contentType, appJson)
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(&updatedCode)
+}
+
+func deleteUserCode(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userId := params["userId"]
+	codeId := params["codeId"]
+
+	var deleteCode database.Code
+
+	if dbs := Db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).First(&deleteCode).Unscoped().Delete(&deleteCode); dbs.Error != nil {
+		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
+		return
+	}
+	w.Header().Set(contentType, appJson)
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(&deleteCode)
+}
