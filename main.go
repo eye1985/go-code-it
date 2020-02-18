@@ -6,7 +6,6 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"postgres/database"
-	"postgres/dummyData"
 	"postgres/server"
 )
 
@@ -31,14 +30,19 @@ func main() {
 	dbUsername := os.Getenv("DB_USERNAME")
 	dbPassword := os.Getenv("DB_PASSWORD")
 
-	db := database.Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
+	db, cErr := database.Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
+
+	if cErr != nil {
+		panic(err)
+	}
+
 	server.Db = db
 
 	defer cleanup(db)
 
-	database.ClearTables(db)
+	//database.ClearTables(db)
 	database.Migrate(db)
-	dummyData.InsertDummyData(db)
+	//dummyData.InsertDummyData(db)
 
 	server.StartServer()
 }

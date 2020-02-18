@@ -5,14 +5,14 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func Connect(host string, port string, dbname string, user string, pass string) *gorm.DB {
+func Connect(host string, port string, dbname string, user string, pass string) (*gorm.DB, error) {
 	dbInfo := fmt.Sprintf("host=%v port=%v sslmode=disable dbname=%v user=%v password=%v", host, port, dbname, user, pass)
 	db, err := gorm.Open("postgres", dbInfo)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }
 
 func Migrate(db *gorm.DB) {

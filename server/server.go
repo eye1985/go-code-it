@@ -11,8 +11,8 @@ import (
 var Db *gorm.DB
 
 const (
-	appJson     = "application/json"
-	contentType = "Content-Type"
+	AppJson     = "application/json"
+	ContentType = "Content-Type"
 )
 
 func StartServer() {
@@ -32,7 +32,7 @@ func StartServer() {
 	router.HandleFunc("/user/{userId}/code/{codeId}", updateUserCode).Methods("PUT")
 	router.HandleFunc("/user/{userId}/code/{codeId}", deleteUserCode).Methods("DELETE")
 
-	router.Use(logger)
+	router.Use(noCache, logger)
 
 	fmt.Println("Starting server...")
 	log.Fatal(http.ListenAndServe(":3000", router))

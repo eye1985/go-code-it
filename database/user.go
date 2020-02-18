@@ -35,27 +35,20 @@ func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
 	return nil
 }
 
-func GetAssociated(db *gorm.DB, u *User, c *[]Code) {
-	db.Model(u).Related(c)
-}
-
-func UpdateUser(db *gorm.DB, name string, u *User, codeName string, typeName string, code string) error {
-	if r := db.Where(&User{Username: name}).First(u); r.Error != nil {
-		return r.Error
-	}
-
-	res := append(u.Codes, Code{
-		Title: codeName,
-		Type:  &typeName,
-		Code:  &code,
+func UpdateUser(db *gorm.DB, userId string, username string, email string) (*User, error) {
+	dbs := db.Table("users").Where("id = ?", userId).Updates(User{
+		Username: username,
+		Email:    email,
 	})
 
-	u.Codes = res
-	if r := db.Save(u); r.Error != nil {
-		return r.Error
+	if dbs.Error != nil {
+		return nil, dbs.Error
 	}
 
-	return nil
+	var user User
+	dbs.Scan(&user)
+
+	return &user, nil
 }
 
 func SoftDeleteUser(db *gorm.DB, user *User) error {

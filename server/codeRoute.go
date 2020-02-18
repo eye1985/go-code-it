@@ -16,7 +16,7 @@ func getCodes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&res)
@@ -38,7 +38,7 @@ func getUserCodes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&user)
@@ -49,16 +49,25 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 	userId := params["userId"]
 	codeId := params["codeId"]
 
-	var code database.Code
-
-	if dbs := Db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId); dbs.Error != nil {
-		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
+	codeIdInt, err := strconv.Atoi(codeId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	} else {
-		dbs.Scan(&code)
 	}
 
-	w.Header().Set(contentType, appJson)
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	code, err := database.QueryUserCode(Db, codeIdInt, userIdInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&code)
@@ -73,20 +82,30 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 	codeType := r.FormValue("type")
 	code := r.FormValue("code")
 
-	var updatedCode database.Code
+	codeIdInt, err := strconv.Atoi(codeId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	if dbs := Db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).Updates(database.Code{
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	updatedCode, err := database.UpdateUserCode(Db, codeIdInt, userIdInt, &database.Code{
 		Title: codeTitle,
 		Type:  &codeType,
 		Code:  &code,
-	}); dbs.Error != nil {
-		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
+	})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
-	} else {
-		dbs.Scan(&updatedCode)
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&updatedCode)
@@ -97,13 +116,26 @@ func deleteUserCode(w http.ResponseWriter, r *http.Request) {
 	userId := params["userId"]
 	codeId := params["codeId"]
 
-	var deleteCode database.Code
-
-	if dbs := Db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).First(&deleteCode).Unscoped().Delete(&deleteCode); dbs.Error != nil {
-		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
+	codeIdInt, err := strconv.Atoi(codeId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set(contentType, appJson)
+
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	deleteCode, err := database.DeleteUserCode(Db, codeIdInt, userIdInt)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&deleteCode)

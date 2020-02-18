@@ -40,8 +40,4 @@ func InsertDummyData(db *gorm.DB) {
 
 	database.Query(db, &users)
 	database.Query(db, &codes)
-
-	database.UpdateUser(db, "Are", &users[1], "More block of codes", "hmm", "alert(asdasdasd)")
-	database.UpdateUser(db, "Are", &users[1], "More block of codes 2", "hmm", "alert(asdasdasd)")
-	database.UpdateUser(db, "Are", &users[1], "Array from polyfill", "javascript", ArrayFrom)
 }

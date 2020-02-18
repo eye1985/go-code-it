@@ -47,7 +47,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }
@@ -58,19 +58,21 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 
-	var user database.User
-
-	if dbs := Db.Table("users").Where("id = ?", userId).Updates(database.User{
-		Username: username,
-		Email:    email,
-	}); dbs.Error != nil {
-		http.Error(w, dbs.Error.Error(), http.StatusNotFound)
-	} else {
-		dbs.Scan(&user)
-		w.Header().Set(contentType, appJson)
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&user)
+	if len(username) == 0 || len(username) == 0 {
+		http.Error(w, "Username or email missing", http.StatusUnprocessableEntity)
+		return
 	}
+
+	user, err := database.UpdateUser(Db, userId, username, email)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set(ContentType, AppJson)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&user)
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +95,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&user)
@@ -107,7 +109,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	w.Header().Set(contentType, appJson)
+	w.Header().Set(ContentType, AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&users)

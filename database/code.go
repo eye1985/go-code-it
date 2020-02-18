@@ -16,11 +16,47 @@ func QueryAllCodes(db *gorm.DB) ([]UserAndCode, error) {
 	return result, nil
 }
 
-func QueryUserCodes(db *gorm.DB, userId int) (User, error) {
+func QueryUserCodes(db *gorm.DB, userId int) (*User, error) {
 	var user User
 	if dbs := db.Preload("Codes").Table("users").Where("id = ?", userId).Find(&user); dbs.Error != nil {
-		return user, dbs.Error
+		return nil, dbs.Error
 	}
 
-	return user, nil
+	return &user, nil
+}
+
+func QueryUserCode(db *gorm.DB, userId int, codeId int) (*Code, error) {
+	var code Code
+
+	dbs := db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId)
+
+	if dbs.Error != nil {
+		return nil, dbs.Error
+	}
+
+	return &code, nil
+}
+
+func UpdateUserCode(db *gorm.DB, codeId int, userId int, code *Code) (*Code, error) {
+	var updatedCode Code
+
+	dbs := db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).Updates(code)
+
+	if dbs.Error != nil {
+		return nil, dbs.Error
+	}
+
+	dbs.Scan(&updatedCode)
+	return &updatedCode, nil
+}
+
+func DeleteUserCode(db *gorm.DB, codeId int, userId int) (*Code, error) {
+	var deleteCode Code
+	dbs := db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).First(&deleteCode).Unscoped().Delete(&deleteCode)
+
+	if dbs.Error != nil {
+		return nil, dbs.Error
+	}
+
+	return &deleteCode, nil
 }
