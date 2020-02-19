@@ -37,6 +37,7 @@ func getUserCodes(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 
 	w.Header().Set(enum.ContentType, enum.AppJson)
@@ -56,15 +57,15 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	userIdInt, err2 := strconv.Atoi(userId)
+	if err2 != nil {
+		http.Error(w, err2.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	code, err := database.QueryUserCode(Db, codeIdInt, userIdInt)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	code, err3 := database.QueryUserCode(Db, userIdInt, codeIdInt)
+	if err3 != nil {
+		http.Error(w, err3.Error(), http.StatusNotFound)
 		return
 	}
 
