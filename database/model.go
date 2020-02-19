@@ -4,9 +4,10 @@ import "github.com/jinzhu/gorm"
 
 type User struct {
 	gorm.Model
-	Username string `json:"username" gorm:"type:varchar(100);"`
-	Email    string `json:"email" gorm:"type:varchar(100);unique;not null"`
-	Codes    []Code `json:"codes"`
+	Username string  `json:"username" gorm:"type:varchar(100);"`
+	Password *string `json:"password" gorm:"type:varchar(30);not null"`
+	Email    *string `json:"email" gorm:"type:varchar(100);unique;not null"`
+	Codes    []Code  `json:"codes"`
 }
 
 type Code struct {

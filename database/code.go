@@ -37,16 +37,30 @@ func QueryUserCode(db *gorm.DB, userId int, codeId int) (*Code, error) {
 	return &code, nil
 }
 
+func CreateUserCode(db *gorm.DB, userId string, code *Code) (*Code, error) {
+	dbs := db.Where("id = ?", userId).
+		First(&User{}).
+		Table("codes").
+		Create(&code)
+	if dbs.Error != nil {
+		return nil, dbs.Error
+	}
+	return code, nil
+}
+
 func UpdateUserCode(db *gorm.DB, codeId int, userId int, code *Code) (*Code, error) {
 	var updatedCode Code
 
-	dbs := db.Table("codes").Where("id = ? AND user_id = ?", codeId, userId).Updates(code)
+	dbs := db.
+		Table("codes").
+		Where("id = ? AND user_id = ?", codeId, userId).
+		First(&updatedCode).
+		Updates(&code)
 
 	if dbs.Error != nil {
 		return nil, dbs.Error
 	}
 
-	dbs.Scan(&updatedCode)
 	return &updatedCode, nil
 }
 

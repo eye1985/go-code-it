@@ -5,18 +5,18 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-func CreateUser(db *gorm.DB, name string, email string, codes []Code) error {
+func CreateUser(db *gorm.DB, name string, email string, password string) (*User, error) {
 	user := User{
 		Username: name,
-		Email:    email,
-		Codes:    codes,
+		Password: &password,
+		Email:    &email,
 	}
 
 	if dbc := db.Create(&user); dbc.Error != nil {
-		return dbc.Error
+		return nil, dbc.Error
 	}
 
-	return nil
+	return &user, nil
 }
 
 func Query(db *gorm.DB, q interface{}) error {
@@ -28,25 +28,29 @@ func Query(db *gorm.DB, q interface{}) error {
 }
 
 func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
-	if result := db.Where(q, qs).Find(i); result.Error != nil {
+	if result := db.
+		Where(q, qs).
+		Find(i); result.Error != nil {
 		return result.Error
 	}
 
 	return nil
 }
 
-func UpdateUser(db *gorm.DB, userId string, username string, email string) (*User, error) {
-	dbs := db.Table("users").Where("id = ?", userId).Updates(User{
-		Username: username,
-		Email:    email,
-	})
+func UpdateUser(db *gorm.DB, userId string, username string, email string, password string) (*User, error) {
+	var user User
+	dbs := db.Table("users").
+		Where("id = ?", userId).
+		Find(&user).
+		Updates(User{
+			Username: username,
+			Password: &password,
+			Email:    &email,
+		})
 
 	if dbs.Error != nil {
 		return nil, dbs.Error
 	}
-
-	var user User
-	dbs.Scan(&user)
 
 	return &user, nil
 }

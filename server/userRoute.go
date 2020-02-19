@@ -2,28 +2,48 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"postgres/database"
 	"postgres/enum"
+	"postgres/validate"
 )
 
-type TestData struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+func validateForm(username string, password string, email string) string {
+	var err error
+	var errStr string
+
+	err = validate.Username(username)
+	if err != nil {
+		errStr += fmt.Sprintf("%v \n", err.Error())
+	}
+	err = validate.Password(password)
+
+	if err != nil {
+		errStr += fmt.Sprintf("%v \n", err.Error())
+	}
+
+	err = validate.Email(email)
+	if err != nil {
+		errStr += fmt.Sprintf("%v \n", err.Error())
+	}
+
+	return errStr
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
-	var post database.User
-	var err error
-	err = json.NewDecoder(r.Body).Decode(&post)
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	email := r.FormValue("email")
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	errorMsg := validateForm(username, password, email)
+	if len(errorMsg) > 0 {
+		http.Error(w, errorMsg, http.StatusUnprocessableEntity)
 		return
 	}
 
-	err = database.CreateUser(Db, post.Username, post.Email, nil)
+	user, err := database.CreateUser(Db, username, email, password)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -33,7 +53,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(&post)
+	json.NewEncoder(w).Encode(&user)
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -58,13 +78,15 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	userId := params["id"]
 	username := r.FormValue("username")
 	email := r.FormValue("email")
+	password := r.FormValue("password")
 
-	if len(username) == 0 || len(username) == 0 {
-		http.Error(w, "Username or email missing", http.StatusUnprocessableEntity)
+	errorMsg := validateForm(username, password, email)
+	if len(errorMsg) > 0 {
+		http.Error(w, errorMsg, http.StatusUnprocessableEntity)
 		return
 	}
 
-	user, err := database.UpdateUser(Db, userId, username, email)
+	user, err := database.UpdateUser(Db, userId, username, email, password)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)

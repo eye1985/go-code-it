@@ -42,7 +42,7 @@ func main() {
 
 	defer cleanup(db)
 
-	//database.ClearTables(db)
+	database.ClearTables(db)
 	database.Migrate(db)
 	//dummyData.InsertDummyData(db)
 

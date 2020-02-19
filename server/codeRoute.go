@@ -74,6 +74,38 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&code)
 }
 
+func createUserCode(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userId := params["id"]
+
+	codeTitle := r.FormValue("title")
+	codeType := r.FormValue("type")
+	code := r.FormValue("code")
+
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	createdCode, err2 := database.CreateUserCode(Db, userId, &database.Code{
+		UserID: uint(userIdInt),
+		Title:  codeTitle,
+		Type:   &codeType,
+		Code:   &code,
+	})
+
+	if err2 != nil {
+		http.Error(w, err2.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(enum.ContentType, enum.AppJson)
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(&createdCode)
+}
+
 func updateUserCode(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId := params["userId"]
