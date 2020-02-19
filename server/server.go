@@ -6,34 +6,41 @@ import (
 	"github.com/jinzhu/gorm"
 	"log"
 	"net/http"
+	"postgres/enum"
 )
 
 var Db *gorm.DB
 
-const (
-	AppJson     = "application/json"
-	ContentType = "Content-Type"
-)
-
-func StartServer() {
+func RoutesV1() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+	var api = router.PathPrefix(enum.APIVersion).Subrouter()
+
+	//Not found
+	api.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
 
 	// Users
-	router.HandleFunc("/user", createUser).Methods("POST")
-	router.HandleFunc("/user/{id}", getUser).Methods("GET")
-	router.HandleFunc("/user/{id}", updateUser).Methods("PUT")
-	router.HandleFunc("/user/{id}", deleteUser).Methods("DELETE")
-	router.HandleFunc("/users", getUsers).Methods("GET")
+	api.HandleFunc("/user", createUser).Methods("POST")
+	api.HandleFunc("/user/{id}", getUser).Methods("GET")
+	api.HandleFunc("/user/{id}", updateUser).Methods("PUT")
+	api.HandleFunc("/user/{id}", deleteUser).Methods("DELETE")
+	api.HandleFunc("/users", getUsers).Methods("GET")
 
 	//Code
-	router.HandleFunc("/codes", getCodes).Methods("GET")
-	router.HandleFunc("/user/{id}/code", getUserCodes).Methods("GET")
-	router.HandleFunc("/user/{userId}/code/{codeId}", getUserCode).Methods("GET")
-	router.HandleFunc("/user/{userId}/code/{codeId}", updateUserCode).Methods("PUT")
-	router.HandleFunc("/user/{userId}/code/{codeId}", deleteUserCode).Methods("DELETE")
+	api.HandleFunc("/codes", getCodes).Methods("GET")
+	api.HandleFunc("/user/{id}/code", getUserCodes).Methods("GET")
+	api.HandleFunc("/user/{userId}/code/{codeId}", getUserCode).Methods("GET")
+	api.HandleFunc("/user/{userId}/code/{codeId}", updateUserCode).Methods("PUT")
+	api.HandleFunc("/user/{userId}/code/{codeId}", deleteUserCode).Methods("DELETE")
 
-	router.Use(noCache, logger)
+	api.Use(noCache, logger)
 
+	return api
+}
+
+func StartServer(host string, port string) {
+	router := RoutesV1()
 	fmt.Println("Starting server...")
-	log.Fatal(http.ListenAndServe(":3000", router))
+	log.Fatal(http.ListenAndServe(host+":"+port, router))
 }

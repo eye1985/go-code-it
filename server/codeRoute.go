@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"postgres/database"
+	"postgres/enum"
 	"strconv"
 )
 
@@ -16,7 +17,7 @@ func getCodes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	w.Header().Set(ContentType, AppJson)
+	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&res)
@@ -38,7 +39,7 @@ func getUserCodes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 
-	w.Header().Set(ContentType, AppJson)
+	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&user)
@@ -67,7 +68,7 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(ContentType, AppJson)
+	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&code)
@@ -105,7 +106,7 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(ContentType, AppJson)
+	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&updatedCode)
@@ -135,7 +136,7 @@ func deleteUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(ContentType, AppJson)
+	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&deleteCode)

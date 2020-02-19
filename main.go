@@ -29,6 +29,8 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	dbUsername := os.Getenv("DB_USERNAME")
 	dbPassword := os.Getenv("DB_PASSWORD")
+	serverPort := os.Getenv("SERVER_PORT")
+	serverHost := os.Getenv("SERVER_HOST")
 
 	db, cErr := database.Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
 
@@ -44,5 +46,5 @@ func main() {
 	database.Migrate(db)
 	//dummyData.InsertDummyData(db)
 
-	server.StartServer()
+	server.StartServer(serverHost, serverPort)
 }
