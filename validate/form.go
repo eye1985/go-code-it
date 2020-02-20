@@ -27,3 +27,11 @@ func Email(email string) error {
 	}
 	return nil
 }
+
+func CodeTitle(title string) error {
+	return nil
+}
+
+func CodeType(title string) error {
+	return nil
+}

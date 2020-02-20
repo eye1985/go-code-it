@@ -16,9 +16,9 @@ func Connect(host string, port string, dbname string, user string, pass string) 
 }
 
 func Migrate(db *gorm.DB) {
-	db.AutoMigrate(&User{}, &Code{})
+	db.AutoMigrate(&User{}, &Code{}, &Language{})
 }
 
 func ClearTables(db *gorm.DB) {
-	db.DropTableIfExists(&User{}, &Code{})
+	db.DropTableIfExists(&User{}, &Code{}, &Language{})
 }
