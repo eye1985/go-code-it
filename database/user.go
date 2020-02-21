@@ -5,18 +5,21 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-func CreateUser(db *gorm.DB, name string, email string, password string) (*User, error) {
-	user := User{
-		Username: name,
-		Password: &password,
-		Email:    &email,
+func CreateUser(db *gorm.DB, user *User) (*User, error) {
+	var role Role
+	dbr := db.Where(&Role{Role: "USER"}).First(&role)
+	if dbr.Error != nil {
+		return nil, dbr.Error
 	}
 
-	if dbc := db.Create(&user); dbc.Error != nil {
-		return nil, dbc.Error
+	user.RoleID = &role.ID
+
+	dbu := db.Create(user)
+	if dbu.Error != nil {
+		return nil, dbu.Error
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func Query(db *gorm.DB, q interface{}) error {
@@ -37,11 +40,21 @@ func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
 	return nil
 }
 
-func GetUser(db *gorm.DB, user *User) (*User, error) {
-	var foundUser User
-	dbs := db.Where(user).First(&foundUser)
-	if dbs.Error != nil {
-		return nil, dbs.Error
+type Test struct {
+	Username string
+	Role     string
+}
+
+func GetUser(db *gorm.DB, user *User) (*UserAndRole, error) {
+	var foundUser UserAndRole
+
+	dbRes := db.Table("users").
+		Select("users.*,roles.role").
+		Joins("join roles on roles.id = users.role_id").
+		Scan(&foundUser)
+
+	if dbRes.Error != nil {
+		return nil, dbRes.Error
 	}
 
 	return &foundUser, nil
@@ -53,7 +66,7 @@ func UpdateUser(db *gorm.DB, userId string, username string, email string, passw
 		Where("id = ?", userId).
 		Find(&user).
 		Updates(User{
-			Username: username,
+			Username: &username,
 			Password: &password,
 			Email:    &email,
 		})
@@ -65,8 +78,8 @@ func UpdateUser(db *gorm.DB, userId string, username string, email string, passw
 	return &user, nil
 }
 
-func SoftDeleteUser(db *gorm.DB, user *User) error {
-	if r := db.Delete(user); r.Error != nil {
+func DeleteUser(db *gorm.DB, user *User) error {
+	if r := db.Unscoped().Delete(user); r.Error != nil {
 		return r.Error
 	}
 

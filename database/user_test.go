@@ -33,7 +33,16 @@ func init() {
 }
 
 func TestCreateUser(t *testing.T) {
-	u, err := CreateUser(udb, "Abu", "bla@bla.com", "password")
+
+	un := "Abu"
+	p := "somepassxyz"
+	e := "asdasd@asdasd.com"
+
+	u, err := CreateUser(udb, &User{
+		Username: &un,
+		Password: &p,
+		Email:    &e,
+	})
 
 	if err != nil {
 		t.Fatal(err)
@@ -43,8 +52,9 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
+	un := "Abu"
 	u, err := GetUser(udb, &User{
-		Username: "Abu",
+		Username: &un,
 	})
 
 	if err != nil {
@@ -52,4 +62,5 @@ func TestGetUser(t *testing.T) {
 	}
 
 	log.Printf("%v successfully retrieved", u.Username)
+	udb.Close()
 }

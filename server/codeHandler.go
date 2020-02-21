@@ -25,7 +25,7 @@ func getCodes(w http.ResponseWriter, r *http.Request) {
 
 func getUserCodes(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userId := params["id"]
+	userId := params["userId"]
 	i, err := strconv.Atoi(userId)
 
 	if err != nil {
@@ -33,10 +33,10 @@ func getUserCodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := database.QueryUserCodes(Db, i)
+	user, uerr := database.QueryUserCodes(Db, i)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	if uerr != nil {
+		http.Error(w, uerr.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -77,11 +77,12 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 
 func createUserCode(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userId := params["id"]
+	userId := params["userId"]
 
 	codeTitle := r.FormValue("title")
 	codeDesc := r.FormValue("description")
 	code := r.FormValue("code")
+	languageId := r.FormValue("languageId")
 
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
@@ -89,8 +90,19 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userIdUint := uint(userIdInt)
+
+	languageIdInt, err := strconv.Atoi(languageId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	languageIdUint := uint(languageIdInt)
+
 	createdCode, err2 := database.CreateUserCode(Db, userId, &database.Code{
-		UserID:      uint(userIdInt),
+		UserID:      &userIdUint,
+		LanguageID:  &languageIdUint,
 		Title:       codeTitle,
 		Description: codeDesc,
 		Code:        &code,

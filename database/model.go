@@ -8,19 +8,26 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string  `json:"username" gorm:"type:varchar(30);unique;unique_index;not null"`
+	Username *string `json:"username" gorm:"type:varchar(30);unique;unique_index;not null"`
 	Password *string `json:"password" gorm:"type:varchar(30);not null"`
 	Email    *string `json:"email" gorm:"type:varchar(100);unique;unique_index;not null"`
 	Codes    []Code  `json:"codes"`
+	RoleID   *uint   `json:"roleId" gorm:"not null"`
+}
+
+type Role struct {
+	gorm.Model
+	Role  string `json:"role" gorm:"unique;unique_index;not null"`
+	Users []User `json:"users"`
 }
 
 type Code struct {
 	gorm.Model
 	Title       string  `json:"title" gorm:"type:varchar(60);not null"`
 	Description string  `json:"description" gorm:"type:varchar(300)"`
-	Code        *string `json:"code"`
-	UserID      uint
-	LanguageID  uint
+	Code        *string `json:"code" gorm:"not null"`
+	UserID      *uint   `gorm:"not null"`
+	LanguageID  *uint   `gorm:"not null"`
 }
 
 type Language struct {
@@ -43,4 +50,12 @@ type UserAndCode struct {
 	Codeid   int    `json:"codeId"` //Must be lowercase id for alis to work
 	Title    string `json:"title"`
 	Username string `json:"username"`
+}
+
+type UserAndRole struct {
+	gorm.Model
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
 }

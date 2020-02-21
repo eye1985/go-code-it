@@ -27,20 +27,34 @@ func noCache(next http.Handler) http.Handler {
 	})
 }
 
-func auth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		id := params["id"]
+		userId := params["userId"]
 		session, _ := store.Get(r, cookieName)
 
-		a, ok := session.Values["auth"]
-		test := fmt.Sprintf("%v", a)
+		uid, ok := session.Values["auth"]
+		uidStr := fmt.Sprintf("%v", uid)
 
-		if !ok || test != id {
+		if !ok || uidStr != userId {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 
 		next.ServeHTTP(w, r)
-	}
+	})
+}
+
+func logoutAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, cookieName)
+		uid, ok := session.Values["auth"]
+
+		if !ok || uid == 0 {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
