@@ -80,7 +80,7 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 	userId := params["id"]
 
 	codeTitle := r.FormValue("title")
-	codeType := r.FormValue("type")
+	codeDesc := r.FormValue("description")
 	code := r.FormValue("code")
 
 	userIdInt, err := strconv.Atoi(userId)
@@ -90,10 +90,10 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdCode, err2 := database.CreateUserCode(Db, userId, &database.Code{
-		UserID: uint(userIdInt),
-		Title:  codeTitle,
-		Type:   &codeType,
-		Code:   &code,
+		UserID:      uint(userIdInt),
+		Title:       codeTitle,
+		Description: codeDesc,
+		Code:        &code,
 	})
 
 	if err2 != nil {
@@ -113,7 +113,7 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 	codeId := params["codeId"]
 
 	codeTitle := r.FormValue("title")
-	codeType := r.FormValue("type")
+	codeDesc := r.FormValue("description")
 	code := r.FormValue("code")
 
 	codeIdInt, err := strconv.Atoi(codeId)
@@ -129,9 +129,9 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updatedCode, err := database.UpdateUserCode(Db, codeIdInt, userIdInt, &database.Code{
-		Title: codeTitle,
-		Type:  &codeType,
-		Code:  &code,
+		Title:       codeTitle,
+		Description: codeDesc,
+		Code:        &code,
 	})
 
 	if err != nil {

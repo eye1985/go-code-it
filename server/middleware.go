@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -23,4 +25,22 @@ func noCache(next http.Handler) http.Handler {
 		w.Header().Set("X-Accel-Expires", "0")
 		next.ServeHTTP(w, r)
 	})
+}
+
+func auth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		id := params["id"]
+		session, _ := store.Get(r, cookieName)
+
+		a, ok := session.Values["auth"]
+		test := fmt.Sprintf("%v", a)
+
+		if !ok || test != id {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
 }

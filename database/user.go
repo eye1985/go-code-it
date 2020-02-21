@@ -37,6 +37,16 @@ func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
 	return nil
 }
 
+func GetUser(db *gorm.DB, user *User) (*User, error) {
+	var foundUser User
+	dbs := db.Where(user).First(&foundUser)
+	if dbs.Error != nil {
+		return nil, dbs.Error
+	}
+
+	return &foundUser, nil
+}
+
 func UpdateUser(db *gorm.DB, userId string, username string, email string, password string) (*User, error) {
 	var user User
 	dbs := db.Table("users").

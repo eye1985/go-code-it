@@ -8,24 +8,24 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string  `json:"username" gorm:"type:varchar(100);"`
+	Username string  `json:"username" gorm:"type:varchar(30);unique;unique_index;not null"`
 	Password *string `json:"password" gorm:"type:varchar(30);not null"`
-	Email    *string `json:"email" gorm:"type:varchar(100);unique;not null"`
+	Email    *string `json:"email" gorm:"type:varchar(100);unique;unique_index;not null"`
 	Codes    []Code  `json:"codes"`
 }
 
 type Code struct {
 	gorm.Model
-	Title      string  `json:"title" gorm:"type:varchar(60)"`
-	Type       *string `json:"type"`
-	Code       *string `json:"code"`
-	UserID     uint
-	LanguageID uint
+	Title       string  `json:"title" gorm:"type:varchar(60);not null"`
+	Description string  `json:"description" gorm:"type:varchar(300)"`
+	Code        *string `json:"code"`
+	UserID      uint
+	LanguageID  uint
 }
 
 type Language struct {
 	gorm.Model
-	Language string `json:"language" gorm:"type:varchar(60);unique;not null"`
+	Language string `json:"language" gorm:"type:varchar(60);unique;unique_index;not null"`
 	Codes    []Code
 }
 

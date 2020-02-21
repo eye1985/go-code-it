@@ -40,7 +40,10 @@ func UpdateLanguage(db *gorm.DB, language *Language) (*Language, error) {
 }
 
 func DeleteLanguage(db *gorm.DB, language *Language) (*Language, error) {
-	dbs := db.Unscoped().Delete(&language)
+	dbs := db.Unscoped().
+		Where(&language).
+		Delete(&Language{})
+
 	if dbs.Error != nil {
 		return nil, dbs.Error
 	}

@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var db *gorm.DB
+var ldb *gorm.DB
 
 func init() {
 	err := godotenv.Load("../.env")
@@ -25,7 +25,7 @@ func init() {
 	tdb, cErr := Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
 	ClearTables(tdb)
 	Migrate(tdb)
-	db = tdb
+	ldb = tdb
 
 	if cErr != nil {
 		panic(err)
@@ -33,7 +33,7 @@ func init() {
 }
 
 func TestCreateLanguage(t *testing.T) {
-	lang, err := CreateLanguage(db, &Language{
+	lang, err := CreateLanguage(ldb, &Language{
 		Language: "Javascript",
 	})
 
@@ -41,7 +41,7 @@ func TestCreateLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cLang, err2 := GetLanguage(db, &Language{
+	cLang, err2 := GetLanguage(ldb, &Language{
 		Model: gorm.Model{
 			ID: lang.ID,
 		},
@@ -55,11 +55,11 @@ func TestCreateLanguage(t *testing.T) {
 		t.Error("Result should be Javascript")
 	}
 
-	log.Printf("Language %v created successfully", cLang.Language)
+	log.Printf("Language %v created successfully \n", cLang.Language)
 }
 
 func TestCreateDuplicateLanguage(t *testing.T) {
-	_, err := CreateLanguage(db, &Language{
+	_, err := CreateLanguage(ldb, &Language{
 		Language: "Javascript",
 	})
 
@@ -67,11 +67,11 @@ func TestCreateDuplicateLanguage(t *testing.T) {
 		t.Error("Should throw unique error")
 	}
 
-	log.Printf("Error %v thrown successfully", err)
+	log.Printf("Error %v thrown successfully \n", err)
 }
 
 func TestCreateNilLanguage(t *testing.T) {
-	_, err := CreateLanguage(db, &Language{
+	_, err := CreateLanguage(ldb, &Language{
 		Language: "",
 	})
 
@@ -79,22 +79,30 @@ func TestCreateNilLanguage(t *testing.T) {
 		t.Error("Should throw nil error")
 	}
 
-	log.Printf("Error %v thrown successfully", err.Error())
+	log.Printf("Error %v thrown successfully \n", err.Error())
 }
 
 func TestUpdateLanguage(t *testing.T) {
 
-	jsLang, getErr := GetLanguage(db, &Language{
-		Language: "Javascript",
+	_, goGetErr := CreateLanguage(ldb, &Language{
+		Language: "Go",
+	})
+
+	if goGetErr != nil {
+		t.Fatal(goGetErr)
+	}
+
+	goLang, getErr := GetLanguage(ldb, &Language{
+		Language: "Go",
 	})
 
 	if getErr != nil {
 		t.Fatal(getErr)
 	}
 
-	_, err := UpdateLanguage(db, &Language{
+	_, err := UpdateLanguage(ldb, &Language{
 		Model: gorm.Model{
-			ID: jsLang.ID,
+			ID: goLang.ID,
 		},
 		Language: "Java",
 	})
@@ -103,7 +111,7 @@ func TestUpdateLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	updated, err2 := GetLanguage(db, &Language{
+	updated, err2 := GetLanguage(ldb, &Language{
 		Language: "Java",
 	})
 
@@ -112,14 +120,14 @@ func TestUpdateLanguage(t *testing.T) {
 	}
 
 	if updated.Language != "Java" {
-		t.Error("Language should be Java")
+		t.Errorf("Language should be Java, but is %v", updated.Language)
 	}
 
-	log.Printf("Successfully updated to %v", updated.Language)
+	log.Printf("Successfully updated to %v \n", updated.Language)
 }
 
 func TestGetLanguages(t *testing.T) {
-	langs, err := GetLanguages(db)
+	langs, err := GetLanguages(ldb)
 
 	if err != nil {
 		t.Fatal(err)
@@ -129,15 +137,19 @@ func TestGetLanguages(t *testing.T) {
 		t.Error("Should not be empty")
 	}
 
-	if (*langs)[0].Language != "Java" {
-		t.Error("Language should be Java")
+	if (*langs)[0].Language != "Go" {
+		t.Errorf("Language should be Go %v", (*langs)[0].Language)
 	}
 
-	log.Printf("Successfully retrieved %v", (*langs)[0].Language)
+	if (*langs)[1].Language != "Java" {
+		t.Errorf("Language should be Java, but is %v", (*langs)[1].Language)
+	}
+
+	log.Printf("Successfully retrieved %v \n", (*langs)[0].Language)
 }
 
 func TestDeleteLanguage(t *testing.T) {
-	deleted, err := DeleteLanguage(db, &Language{
+	deleted, err := DeleteLanguage(ldb, &Language{
 		Language: "Java",
 	})
 
@@ -145,5 +157,16 @@ func TestDeleteLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Printf("%v successfully deleted", deleted.Language)
+	langs, err2 := GetLanguages(ldb)
+
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+
+	if len(*langs) != 1 {
+		t.Errorf("Length of Languages should be 1, but is %v", len(*langs))
+	}
+
+	log.Printf("%v successfully deleted \n", deleted.Language)
+	ldb.Close()
 }
