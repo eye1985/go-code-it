@@ -1,13 +1,13 @@
 package server
 
 import (
+	"codepocket/database"
+	"codepocket/enum"
+	"codepocket/validate"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"postgres/database"
-	"postgres/enum"
-	"postgres/validate"
 )
 
 func validateForm(username string, password string, rPassword string, email string) string {

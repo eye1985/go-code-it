@@ -1,4 +1,4 @@
-module postgres
+module codepocket
 
 go 1.13
 

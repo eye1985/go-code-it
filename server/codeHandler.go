@@ -1,11 +1,11 @@
 package server
 
 import (
+	"codepocket/database"
+	"codepocket/enum"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"postgres/database"
-	"postgres/enum"
 	"strconv"
 )
 

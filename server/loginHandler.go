@@ -1,9 +1,9 @@
 package server
 
 import (
+	"codepocket/database"
+	"codepocket/enum"
 	"net/http"
-	"postgres/database"
-	"postgres/enum"
 )
 
 func login(w http.ResponseWriter, r *http.Request) {

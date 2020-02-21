@@ -1,12 +1,12 @@
 package main
 
 import (
+	"codepocket/database"
+	"codepocket/server"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 	"os"
-	"postgres/database"
-	"postgres/server"
 )
 
 func cleanup(db *gorm.DB) {

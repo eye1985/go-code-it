@@ -1,9 +1,9 @@
 package server
 
 import (
+	"codepocket/enum"
 	"github.com/gorilla/mux"
 	"net/http"
-	"postgres/enum"
 )
 
 func RoutesV1() *mux.Router {
