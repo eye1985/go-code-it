@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"log"
 	"os"
 )
 
@@ -36,7 +37,8 @@ func main() {
 	db, cErr := database.Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
 
 	if cErr != nil {
-		panic(err)
+		log.Println("Cannot connect to database: " + cErr.Error())
+		os.Exit(3)
 	}
 
 	server.Db = db
