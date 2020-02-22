@@ -2,11 +2,13 @@ package server
 
 import (
 	"codepocket/database"
+	"codepocket/encrypt"
 	"codepocket/enum"
 	"codepocket/validate"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
@@ -48,9 +50,16 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashedPwd, err := encrypt.HashAndSalt([]byte(password))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	log.Println(hashedPwd)
+
 	user, err := database.CreateUser(Db, &database.User{
 		Username: &username,
-		Password: &password,
+		Password: &hashedPwd,
 		Email:    &email,
 	})
 

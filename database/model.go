@@ -9,7 +9,7 @@ import (
 type User struct {
 	gorm.Model
 	Username *string `json:"username" gorm:"type:varchar(30);unique;unique_index;not null"`
-	Password *string `json:"password" gorm:"type:varchar(30);not null"`
+	Password *string `json:"password" gorm:"type:varchar(100);not null"`
 	Email    *string `json:"email" gorm:"type:varchar(100);unique;unique_index;not null"`
 	Codes    []Code  `json:"codes"`
 	RoleID   *uint   `json:"roleId" gorm:"not null"`

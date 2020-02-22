@@ -2,6 +2,7 @@ package server
 
 import (
 	"codepocket/database"
+	"codepocket/encrypt"
 	"codepocket/enum"
 	"net/http"
 )
@@ -21,7 +22,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if u.Password != password {
+	ok, err := encrypt.ComparePasswords(u.Password, []byte(password))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	if !ok {
 		http.Error(w, "Incorrect password", http.StatusForbidden)
 		return
 	}

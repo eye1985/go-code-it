@@ -12,6 +12,7 @@ func logger(next http.Handler) http.Handler {
 		// Do stuff here
 		log.Printf("URL: %v \n", r.RequestURI)
 		log.Printf("Cache header: %v \n", w.Header().Get("Cache-Control"))
+		log.Printf("Content-Type: %v \n", w.Header().Get("Content-Type"))
 
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
@@ -56,5 +57,12 @@ func logoutAuth(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func asJson(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+		w.Header().Set("Content-Type", "application/json")
 	})
 }
