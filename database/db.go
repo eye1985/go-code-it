@@ -20,13 +20,13 @@ func Migrate(db *gorm.DB) {
 	db.Model(&Code{}).
 		AddForeignKey("user_id", "users(id)", "CASCADE", "CASCADE")
 
-	db.Model(&Role{}).Create(&Role{
+	db.Where(&Role{
 		Role: "USER",
-	})
+	}).FirstOrCreate(&Role{})
 
-	db.Model(&Role{}).Create(&Role{
+	db.Where(&Role{
 		Role: "ADMIN",
-	})
+	}).FirstOrCreate(&Role{})
 
 	languages := [10]string{
 		"Html",
@@ -42,9 +42,9 @@ func Migrate(db *gorm.DB) {
 	}
 
 	for _, language := range languages {
-		db.Model(&Language{}).Create(&Language{
+		db.Where(&Language{
 			Language: language,
-		})
+		}).FirstOrCreate(&Language{})
 	}
 }
 
