@@ -11,7 +11,6 @@ import (
 )
 
 func getCodes(w http.ResponseWriter, r *http.Request) {
-	//res, err := database.QueryAllCodes(Db)
 	var pagination database.Pagination
 
 	start := r.URL.Query().Get("start")

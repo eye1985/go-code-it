@@ -26,6 +26,7 @@ type Code struct {
 	Title       string  `json:"title" gorm:"type:varchar(60);not null"`
 	Description string  `json:"description" gorm:"type:varchar(300)"`
 	Code        *string `json:"code" gorm:"not null"`
+	Public      bool    `json:"public" gorm:"default:true"`
 	UserID      *uint   `gorm:"not null"`
 	LanguageID  *uint   `gorm:"not null"`
 }

@@ -30,10 +30,12 @@ func TestSearchCodes(t *testing.T) {
 
 	count, userAndCodes, err := SearchCodes(sdb, offset, resPerPage)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Should retrieve codes, but got %v", err)
 	}
 
 	if *count != 66 && len(userAndCodes) != 66 {
-		t.Fatal(err)
+		t.Fatalf("Should return 66, but got %v", *count)
 	}
+
+	log.Printf("Returned result: %v", *count)
 }
