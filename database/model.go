@@ -49,10 +49,11 @@ func (l *Language) BeforeCreate() (err error) {
 
 // Used in result
 type UserAndCode struct {
-	Userid   int    `json:"userId"` //Must be lowercase id for alis to work
-	Codeid   int    `json:"codeId"` //Must be lowercase id for alis to work
-	Title    string `json:"title"`
-	Username string `json:"username"`
+	Userid      int    `json:"userId"` //Must be lowercase id for alis to work
+	Codeid      int    `json:"codeId"` //Must be lowercase id for alis to work
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Username    string `json:"username"`
 }
 
 type UserAndRole struct {

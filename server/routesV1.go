@@ -43,7 +43,7 @@ func RoutesV1() *mux.Router {
 	codes.HandleFunc("/{codeId}", deleteUserCode).Methods("DELETE")
 	codes.Use(auth)
 
-	api.Use(noCache, logger)
+	api.Use(cors, logger)
 
 	return router
 }
