@@ -5,22 +5,63 @@ import (
 	"codepocket/enum"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"math"
 	"net/http"
 	"strconv"
 )
 
 func getCodes(w http.ResponseWriter, r *http.Request) {
+	//res, err := database.QueryAllCodes(Db)
+	var pagination database.Pagination
 
-	res, err := database.QueryAllCodes(Db)
+	start := r.URL.Query().Get("start")
+	hitPerPage := r.URL.Query().Get("hitPerPage")
+
+	startInt, err := strconv.Atoi(start)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	hitPerPageInt, err := strconv.Atoi(hitPerPage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	count, userAndCodes, err := database.SearchCodes(Db, int16(startInt), int16(hitPerPageInt))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	totalPage := math.Ceil(float64(*count) / float64(hitPerPageInt))
+	currentPage := math.Ceil(float64(startInt) / float64(hitPerPageInt))
+	next := startInt + hitPerPageInt
+	prev := startInt - hitPerPageInt
+
+	if len(userAndCodes) == 0 {
+		totalPage = 0
+		currentPage = 0
+	}
+
+	if prev < 0 {
+		prev = 0
+	}
+
+	pagination = database.Pagination{
+		Codes:       userAndCodes,
+		CurrentPage: int16(currentPage),
+		NextStart:   int16(next),
+		PrevStart:   int16(prev),
+		TotalPage:   int16(totalPage),
 	}
 
 	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(&res)
+	json.NewEncoder(w).Encode(&pagination)
 }
 
 func getUserCodes(w http.ResponseWriter, r *http.Request) {

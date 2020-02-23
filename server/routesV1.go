@@ -17,7 +17,7 @@ func RoutesV1() *mux.Router {
 
 	//Public
 	api.HandleFunc("/login", login).Methods("POST")
-
+	//api.HandleFunc("/search", search).Methods("GET")
 	api.HandleFunc("/user", createUser).Methods("POST")
 	api.HandleFunc("/users", getUsers).Methods("GET")
 	api.HandleFunc("/codes", getCodes).Methods("GET")

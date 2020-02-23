@@ -44,6 +44,8 @@ func (l *Language) BeforeCreate() (err error) {
 	return
 }
 
+// Output model
+
 // Used in result
 type UserAndCode struct {
 	Userid   int    `json:"userId"` //Must be lowercase id for alis to work
@@ -58,4 +60,12 @@ type UserAndRole struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
+}
+
+type Pagination struct {
+	Codes       []UserAndCode `json:"codes"`
+	CurrentPage int16         `json:"currentPage"`
+	NextStart   int16         `json:"nextStart"`
+	PrevStart   int16         `json:"prevStart"`
+	TotalPage   int16         `json:"totalPage"`
 }
