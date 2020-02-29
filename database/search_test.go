@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var sdb *gorm.DB
+var tdb *gorm.DB
 
 func TestMain(m *testing.M) {
 	db, err := test.ConnectToDb(Connect, ClearTables, Migrate)
@@ -16,8 +16,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sdb = db
-	InsertDummyData(sdb)
+	tdb = db
+	InsertDummyData(tdb)
 	exitVal := m.Run()
 	db.Close()
 	log.Println("Search test finished")
@@ -28,13 +28,13 @@ func TestSearchCodes(t *testing.T) {
 	resPerPage := int16(20)
 	offset := int16(21)
 
-	count, userAndCodes, err := SearchCodes(sdb, offset, resPerPage)
+	count, userAndCodes, err := SearchCodes(tdb, offset, resPerPage)
 	if err != nil {
 		t.Fatalf("Should retrieve codes, but got %v", err)
 	}
 
-	if *count != 66 && len(userAndCodes) != 66 {
-		t.Fatalf("Should return 66, but got %v", *count)
+	if *count != 67 && len(userAndCodes) != 67 {
+		t.Fatalf("Should return 67, but got %v", *count)
 	}
 
 	log.Printf("Returned result: %v", *count)

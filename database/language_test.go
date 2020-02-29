@@ -2,38 +2,12 @@ package database
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
 	"log"
-	"os"
 	"testing"
 )
 
-var ldb *gorm.DB
-
-func init() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		panic(err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("TEST_DB_NAME")
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-
-	tdb, cErr := Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
-	ClearTables(tdb)
-	Migrate(tdb)
-	ldb = tdb
-
-	if cErr != nil {
-		panic(err)
-	}
-}
-
 func TestCreateLanguage(t *testing.T) {
-	lang, err := CreateLanguage(ldb, &Language{
+	lang, err := CreateLanguage(tdb, &Language{
 		Language: "Java",
 	})
 
@@ -41,7 +15,7 @@ func TestCreateLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cLang, err2 := GetLanguage(ldb, &Language{
+	cLang, err2 := GetLanguage(tdb, &Language{
 		Model: gorm.Model{
 			ID: lang.ID,
 		},
@@ -59,7 +33,7 @@ func TestCreateLanguage(t *testing.T) {
 }
 
 func TestCreateDuplicateLanguage(t *testing.T) {
-	_, err := CreateLanguage(ldb, &Language{
+	_, err := CreateLanguage(tdb, &Language{
 		Language: "Java",
 	})
 
@@ -71,7 +45,7 @@ func TestCreateDuplicateLanguage(t *testing.T) {
 }
 
 func TestCreateNilLanguage(t *testing.T) {
-	_, err := CreateLanguage(ldb, &Language{
+	_, err := CreateLanguage(tdb, &Language{
 		Language: "",
 	})
 
@@ -84,7 +58,7 @@ func TestCreateNilLanguage(t *testing.T) {
 
 func TestUpdateLanguage(t *testing.T) {
 
-	_, goGetErr := CreateLanguage(ldb, &Language{
+	_, goGetErr := CreateLanguage(tdb, &Language{
 		Language: "Python",
 	})
 
@@ -92,7 +66,7 @@ func TestUpdateLanguage(t *testing.T) {
 		t.Fatal(goGetErr)
 	}
 
-	pyLang, getErr := GetLanguage(ldb, &Language{
+	pyLang, getErr := GetLanguage(tdb, &Language{
 		Language: "Python",
 	})
 
@@ -100,7 +74,7 @@ func TestUpdateLanguage(t *testing.T) {
 		t.Fatal(getErr)
 	}
 
-	_, err := UpdateLanguage(ldb, &Language{
+	_, err := UpdateLanguage(tdb, &Language{
 		Model: gorm.Model{
 			ID: pyLang.ID,
 		},
@@ -111,7 +85,7 @@ func TestUpdateLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	updated, err2 := GetLanguage(ldb, &Language{
+	updated, err2 := GetLanguage(tdb, &Language{
 		Language: "Kotlin",
 	})
 
@@ -127,7 +101,7 @@ func TestUpdateLanguage(t *testing.T) {
 }
 
 func TestGetLanguages(t *testing.T) {
-	langs, err := GetLanguages(ldb)
+	langs, err := GetLanguages(tdb)
 
 	if err != nil {
 		t.Fatal(err)
@@ -161,7 +135,7 @@ func TestGetLanguages(t *testing.T) {
 }
 
 func TestDeleteLanguage(t *testing.T) {
-	deleted, err := DeleteLanguage(ldb, &Language{
+	deleted, err := DeleteLanguage(tdb, &Language{
 		Language: "Kotlin",
 	})
 
@@ -169,7 +143,7 @@ func TestDeleteLanguage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	langs, err2 := GetLanguages(ldb)
+	langs, err2 := GetLanguages(tdb)
 
 	if err2 != nil {
 		t.Fatal(err2)
@@ -180,5 +154,4 @@ func TestDeleteLanguage(t *testing.T) {
 	}
 
 	log.Printf("%v successfully deleted \n", deleted.Language)
-	ldb.Close()
 }

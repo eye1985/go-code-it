@@ -71,3 +71,13 @@ type Pagination struct {
 	PrevStart   int16         `json:"prevStart"`
 	TotalPage   int16         `json:"totalPage"`
 }
+
+type CodeAndLanguage struct {
+	gorm.Model
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Code        string `json:"code"`
+	Public      bool   `json:"public"`
+	Username    string `json:"username"`
+	Language    string `json:"language"`
+}

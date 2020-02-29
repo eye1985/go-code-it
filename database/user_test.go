@@ -1,36 +1,9 @@
 package database
 
 import (
-	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
 	"log"
-	"os"
 	"testing"
 )
-
-var udb *gorm.DB
-
-func init() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		panic(err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("TEST_DB_NAME")
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-
-	tdb, cErr := Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
-	ClearTables(tdb)
-	Migrate(tdb)
-	udb = tdb
-
-	if cErr != nil {
-		panic(err)
-	}
-}
 
 func TestCreateUser(t *testing.T) {
 
@@ -38,7 +11,7 @@ func TestCreateUser(t *testing.T) {
 	p := "somepassxyz"
 	e := "asdasd@asdasd.com"
 
-	u, err := CreateUser(udb, &User{
+	u, err := CreateUser(tdb, &User{
 		Username: &un,
 		Password: &p,
 		Email:    &e,
@@ -53,7 +26,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	un := "Abu"
-	u, err := GetUser(udb, &User{
+	u, err := GetUser(tdb, &User{
 		Username: &un,
 	})
 
@@ -62,5 +35,4 @@ func TestGetUser(t *testing.T) {
 	}
 
 	log.Printf("%v successfully retrieved", u.Username)
-	udb.Close()
 }

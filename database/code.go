@@ -27,12 +27,15 @@ func QueryUserCodes(db *gorm.DB, userId int) (*[]Code, error) {
 	return &codes, nil
 }
 
-func QueryUserCode(db *gorm.DB, userId int, codeId int) (*Code, error) {
-	var code Code
+func QueryUserCode(db *gorm.DB, userId int, codeId int) (*CodeAndLanguage, error) {
+	var code CodeAndLanguage
 
 	dbs := db.
+		Debug().
 		Table("codes").
-		Where("id = ? AND user_id = ?", codeId, userId).
+		Select("*").
+		Joins("join languages on languages.id = codes.language_id").
+		Where("codes.id = ? AND codes.user_id = ?", codeId, userId).
 		First(&code)
 
 	if dbs.Error != nil {

@@ -2,43 +2,16 @@ package database
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
 	"log"
-	"os"
 	"testing"
 )
-
-var cdb *gorm.DB
-
-func init() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		panic(err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("TEST_DB_NAME")
-	dbUsername := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-
-	tdb, cErr := Connect(dbHost, dbPort, dbName, dbUsername, dbPassword)
-	ClearTables(tdb)
-	Migrate(tdb)
-	cdb = tdb
-
-	if cErr != nil {
-		panic(err)
-	}
-}
 
 func TestCreateUserCode(t *testing.T) {
 	uname := "Mikkel"
 	email := "m@m.com"
 	password := "abcdefghiklkmn"
 
-	user, cuErr := CreateUser(cdb, &User{
+	user, cuErr := CreateUser(tdb, &User{
 		Username: &uname,
 		Email:    &email,
 		Password: &password,
@@ -51,7 +24,7 @@ func TestCreateUserCode(t *testing.T) {
 	langId := uint(1)
 	code := "bla bla bla"
 
-	uc, ucErr := CreateUserCode(cdb, fmt.Sprint(user.ID), &Code{
+	uc, ucErr := CreateUserCode(tdb, fmt.Sprint(user.ID), &Code{
 		Title:       "My code",
 		Description: "None",
 		Code:        &code,
@@ -64,5 +37,19 @@ func TestCreateUserCode(t *testing.T) {
 	}
 
 	log.Printf("Successfully created code %v", uc.Title)
-	cdb.Close()
+}
+
+func TestQueryUserCode(t *testing.T) {
+	code, err := QueryUserCode(tdb, 1, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if code.Language != "Html" {
+		t.Fatalf("Should be HTML, but is %v", code.Language)
+	}
+
+	if code.Title != "My code sample0" {
+		t.Fatalf("Should be My code sample0, but is %v", code.Title)
+	}
 }
