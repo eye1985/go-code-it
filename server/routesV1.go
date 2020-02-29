@@ -21,6 +21,7 @@ func RoutesV1() *mux.Router {
 	api.HandleFunc("/user", createUser).Methods("POST")
 	api.HandleFunc("/users", getUsers).Methods("GET")
 	api.HandleFunc("/codes", getCodes).Methods("GET")
+	api.Use(cors)
 
 	// Logout
 	authPath := api.PathPrefix("/logout").Subrouter()
@@ -43,7 +44,7 @@ func RoutesV1() *mux.Router {
 	codes.HandleFunc("/{codeId}", deleteUserCode).Methods("DELETE")
 	codes.Use(auth)
 
-	api.Use(cors, logger)
+	api.Use(logger)
 
 	return router
 }
