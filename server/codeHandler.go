@@ -5,6 +5,8 @@ import (
 	"codepocket/enum"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -28,7 +30,7 @@ func getCodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count, userAndCodes, err := database.SearchCodes(Db, int16(startInt), int16(hitPerPageInt))
+	count, userAndCodes, err := database.SearchCodes(Db, "", int16(startInt), int16(hitPerPageInt))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -107,6 +109,27 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 	if err3 != nil {
 		http.Error(w, err3.Error(), http.StatusNotFound)
 		return
+	}
+
+	log.Printf("code public is %v", code.Public)
+
+	if !code.Public {
+		session, _ := store.Get(r, cookieName)
+		u, err := database.GetUser(Db, &database.User{
+			Model: gorm.Model{
+				ID: uint(userIdInt),
+			},
+		})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		if session.Values["auth"] != u.ID {
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
+			return
+		}
 	}
 
 	w.Header().Set(enum.ContentType, enum.AppJson)

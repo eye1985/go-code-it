@@ -4,7 +4,10 @@ import (
 	"codepocket/database"
 	"codepocket/encrypt"
 	"codepocket/enum"
+	"fmt"
+	"github.com/jinzhu/gorm"
 	"net/http"
+	"strconv"
 )
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +16,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	u, err := database.GetUser(Db, &database.User{
+	u, err := database.GetUserAndRole(Db, &database.User{
 		Username: &username,
 	})
 
@@ -26,6 +29,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if !ok {
@@ -34,16 +38,69 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.Values["auth"] = u.ID
+	session.Options.HttpOnly = true
 	session.Save(r, w)
+
+	userId := fmt.Sprint(u.ID)
+
+	_, updateErr := database.UpdateUser(Db, userId, &database.User{
+		Session: &userId,
+	})
+
+	if updateErr != nil {
+		http.Error(w, updateErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	userId := r.FormValue("userId")
 	session, _ := store.Get(r, cookieName)
 
-	session.Values["auth"] = 0
+	userIdUint, err := strconv.ParseUint(userId, 10, 32)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	u, uErr := database.GetUser(Db, &database.User{
+		Model: gorm.Model{
+			ID: uint(userIdUint),
+		},
+	})
+
+	if uErr != nil {
+		http.Error(w, uErr.Error(), http.StatusNotFound)
+		return
+	}
+
+	if u.Session == nil {
+		http.Error(w, "No session found", http.StatusUnauthorized)
+		return
+	}
+
+	sessionStr := fmt.Sprint(session.Values["auth"])
+
+	if sessionStr != *u.Session {
+		http.Error(w, "Not same session", http.StatusUnauthorized)
+		return
+	}
+
+	_, updateErr := database.UpdateUser(Db, userId, &database.User{
+		Session: nil,
+	})
+
+	if updateErr != nil {
+		http.Error(w, updateErr.Error(), http.StatusNotFound)
+		return
+	}
+
+	session.Options.MaxAge = -1
+	session.Options.HttpOnly = true
 	session.Save(r, w)
 
 	w.Header().Set(enum.ContentType, enum.AppJson)

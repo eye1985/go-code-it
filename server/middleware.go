@@ -46,6 +46,34 @@ func auth(next http.Handler) http.Handler {
 	})
 }
 
+func authHandle(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		userId := params["userId"]
+		session, _ := store.Get(r, cookieName)
+
+		uid, ok := session.Values["auth"]
+		uidStr := fmt.Sprintf("%v", uid)
+
+		if !ok || uidStr != userId {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}
+
+//func isPublicCode (next http.HandlerFunc) http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request){
+//		params := mux.Vars(r)
+//		userId := params["userId"]
+//		codeId := params["codeId"]
+//
+//		next.ServeHTTP(w, r)
+//	}
+//}
+
 func logoutAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, cookieName)

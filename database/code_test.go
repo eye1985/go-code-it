@@ -49,7 +49,7 @@ func TestQueryUserCode(t *testing.T) {
 		t.Fatalf("Should be HTML, but is %v", code.Language)
 	}
 
-	if code.Title != "My code sample0" {
-		t.Fatalf("Should be My code sample0, but is %v", code.Title)
+	if code.Title != "Private Alert code" {
+		t.Fatalf("Should be Private Alert code, but is %v", code.Title)
 	}
 }

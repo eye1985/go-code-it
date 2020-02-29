@@ -11,6 +11,7 @@ type User struct {
 	Username *string `json:"username" gorm:"type:varchar(30);unique;unique_index;not null"`
 	Password *string `json:"password" gorm:"type:varchar(100);not null"`
 	Email    *string `json:"email" gorm:"type:varchar(100);unique;unique_index;not null"`
+	Session  *string `json:"session" gorm:"varchar(100);unique"`
 	Codes    []Code  `json:"codes"`
 	RoleID   *uint   `json:"roleId" gorm:"not null"`
 }
@@ -26,7 +27,7 @@ type Code struct {
 	Title       string  `json:"title" gorm:"type:varchar(60);not null"`
 	Description string  `json:"description" gorm:"type:varchar(300)"`
 	Code        *string `json:"code" gorm:"not null"`
-	Public      bool    `json:"public" gorm:"default:true"`
+	Public      *bool   `json:"public" gorm:"default:true;not null"`
 	UserID      *uint   `gorm:"not null"`
 	LanguageID  *uint   `gorm:"not null"`
 }

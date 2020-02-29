@@ -4,7 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func SearchCodes(db *gorm.DB, offset int16, limit int16) (*uint16, []UserAndCode, error) {
+func SearchCodes(db *gorm.DB, query string, offset int16, limit int16) (*uint16, []UserAndCode, error) {
 	var res []UserAndCode
 	var count uint16
 

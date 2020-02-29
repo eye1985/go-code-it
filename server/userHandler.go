@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func validateForm(username string, password string, rPassword string, email string) string {
@@ -78,8 +80,17 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["userId"]
 
-	var user database.User
-	err := database.QueryOne(Db, "id = ?", id, &user)
+	idUint, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	u, err := database.GetUser(Db, &database.User{
+		Model: gorm.Model{
+			ID: uint(idUint),
+		},
+	})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -88,7 +99,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&user)
+	json.NewEncoder(w).Encode(&u)
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +116,11 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := database.UpdateUser(Db, userId, username, email, password)
+	user, err := database.UpdateUser(Db, userId, &database.User{
+		Username: &username,
+		Password: &password,
+		Email:    &repeatPassword,
+	})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -121,16 +136,24 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["userId"]
 
-	var user database.User
-	var err error
-	err = database.QueryOne(Db, "id = ?", id, &user)
+	idUint, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	u, err := database.GetUser(Db, &database.User{
+		Model: gorm.Model{
+			ID: uint(idUint),
+		},
+	})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	err = database.DeleteUser(Db, &user)
+	err = database.DeleteUser(Db, u)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -140,7 +163,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(&user)
+	json.NewEncoder(w).Encode(&u)
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {

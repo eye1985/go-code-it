@@ -30,25 +30,26 @@ func Query(db *gorm.DB, q interface{}) error {
 	return nil
 }
 
-func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
-	if result := db.
-		Where(q, qs).
-		Find(i); result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
+//func QueryOne(db *gorm.DB, q string, qs string, i interface{}) error {
+//	if result := db.
+//		Where(q, qs).
+//		First(&i); result.Error != nil {
+//		return result.Error
+//	}
+//
+//	return nil
+//}
 
 type Test struct {
 	Username string
 	Role     string
 }
 
-func GetUser(db *gorm.DB, user *User) (*UserAndRole, error) {
+func GetUserAndRole(db *gorm.DB, user *User) (*UserAndRole, error) {
 	var foundUser UserAndRole
 
 	dbRes := db.Table("users").
+		Where(&user).
 		Select("users.*,roles.role").
 		Joins("join roles on roles.id = users.role_id").
 		Scan(&foundUser)
@@ -60,16 +61,27 @@ func GetUser(db *gorm.DB, user *User) (*UserAndRole, error) {
 	return &foundUser, nil
 }
 
-func UpdateUser(db *gorm.DB, userId string, username string, email string, password string) (*User, error) {
+func GetUser(db *gorm.DB, user *User) (*User, error) {
+	var foundUser User
+
+	dbRes := db.
+		Table("users").
+		Where(&user).
+		Scan(&foundUser)
+
+	if dbRes.Error != nil {
+		return nil, dbRes.Error
+	}
+
+	return &foundUser, nil
+}
+
+func UpdateUser(db *gorm.DB, userId string, u *User) (*User, error) {
 	var user User
 	dbs := db.Table("users").
 		Where("id = ?", userId).
 		Find(&user).
-		Updates(User{
-			Username: &username,
-			Password: &password,
-			Email:    &email,
-		})
+		Updates(u)
 
 	if dbs.Error != nil {
 		return nil, dbs.Error
