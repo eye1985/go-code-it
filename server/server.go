@@ -15,6 +15,10 @@ const cookieName = "auth"
 
 func InitSession(secret string) {
 	store = CreateSessionStore(secret)
+	store.Options = &sessions.Options{
+		MaxAge:   60 * 30,
+		HttpOnly: true,
+	}
 }
 
 func StartServer(host string, port string) {

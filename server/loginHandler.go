@@ -4,6 +4,7 @@ import (
 	"codepocket/database"
 	"codepocket/encrypt"
 	"codepocket/enum"
+	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"net/http"
@@ -38,7 +39,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.Values["auth"] = u.ID
-	session.Options.HttpOnly = true
 	session.Save(r, w)
 
 	userId := fmt.Sprint(u.ID)
@@ -54,13 +54,26 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
+
+	userIdStruct := struct {
+		UserId string
+	}{
+		UserId: userId,
+	}
+
+	json.NewEncoder(w).Encode(&userIdStruct)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	userId := r.FormValue("userId")
 	session, _ := store.Get(r, cookieName)
 
-	userIdUint, err := strconv.ParseUint(userId, 10, 32)
+	if !session.Options.HttpOnly {
+		http.Error(w, "Not httponly cookie", http.StatusForbidden)
+		return
+	}
+
+	userIdStr := fmt.Sprint(session.Values["auth"])
+	userIdUint, err := strconv.ParseUint(userIdStr, 10, 32)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,7 +103,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, updateErr := database.UpdateUser(Db, userId, &database.User{
+	_, updateErr := database.UpdateUser(Db, userIdStr, &database.User{
 		Session: nil,
 	})
 
@@ -99,8 +112,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session.Values["auth"] = nil
 	session.Options.MaxAge = -1
-	session.Options.HttpOnly = true
 	session.Save(r, w)
 
 	w.Header().Set(enum.ContentType, enum.AppJson)

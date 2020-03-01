@@ -26,7 +26,6 @@ func RoutesV1() *mux.Router {
 	// Logout
 	authPath := api.PathPrefix("/logout").Subrouter()
 	authPath.HandleFunc("", logout).Methods("POST")
-	authPath.Use(auth)
 
 	// Users
 	users := api.PathPrefix("/user").Subrouter()

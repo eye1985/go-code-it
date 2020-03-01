@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -110,8 +109,6 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err3.Error(), http.StatusNotFound)
 		return
 	}
-
-	log.Printf("code public is %v", code.Public)
 
 	if !code.Public {
 		session, _ := store.Get(r, cookieName)
