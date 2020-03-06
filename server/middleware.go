@@ -64,16 +64,6 @@ func authHandle(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-//func isPublicCode (next http.HandlerFunc) http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request){
-//		params := mux.Vars(r)
-//		userId := params["userId"]
-//		codeId := params["codeId"]
-//
-//		next.ServeHTTP(w, r)
-//	}
-//}
-
 func logoutAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, cookieName)

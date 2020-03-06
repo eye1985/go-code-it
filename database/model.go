@@ -82,3 +82,8 @@ type CodeAndLanguage struct {
 	Username    string `json:"username"`
 	Language    string `json:"language"`
 }
+
+type IdAndLanguage struct {
+	ID       string `json:"id"`
+	Language string `json:"language"`
+}

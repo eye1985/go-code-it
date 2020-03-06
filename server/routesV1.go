@@ -34,6 +34,10 @@ func RoutesV1() *mux.Router {
 	users.HandleFunc("/{userId}", deleteUser).Methods("DELETE")
 	users.Use(auth)
 
+	//Language
+	languages := api.PathPrefix("/language").Subrouter()
+	languages.HandleFunc("", getLanguage).Methods("GET")
+
 	//Code
 	codes := api.PathPrefix("/user/{userId}/code").Subrouter()
 	codes.HandleFunc("", authHandle(getUserCodes)).Methods("GET")

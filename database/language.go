@@ -20,9 +20,11 @@ func GetLanguage(db *gorm.DB, language *Language) (*Language, error) {
 	return language, nil
 }
 
-func GetLanguages(db *gorm.DB) (*[]Language, error) {
-	var languages []Language
-	dbs := db.Find(&languages)
+func GetLanguages(db *gorm.DB) (*[]IdAndLanguage, error) {
+	var languages []IdAndLanguage
+
+	dbs := db.Find(&[]Language{}).Scan(&languages)
+
 	if dbs.Error != nil {
 		return nil, dbs.Error
 	}
