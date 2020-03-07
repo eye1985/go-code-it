@@ -56,7 +56,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	userIdStruct := struct {
-		UserId string
+		UserId string `json:"userid"`
 	}{
 		UserId: userId,
 	}

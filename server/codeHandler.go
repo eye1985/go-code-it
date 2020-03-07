@@ -136,6 +136,7 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUserCode(w http.ResponseWriter, r *http.Request) {
+	var public bool
 	params := mux.Vars(r)
 	userId := params["userId"]
 
@@ -143,6 +144,13 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 	codeDesc := r.FormValue("description")
 	code := r.FormValue("code")
 	languageId := r.FormValue("languageId")
+	publicStr := r.FormValue("public")
+
+	if publicStr == "true" {
+		public = true
+	} else if publicStr == "false" {
+		public = false
+	}
 
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
@@ -166,6 +174,7 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 		Title:       codeTitle,
 		Description: codeDesc,
 		Code:        &code,
+		Public:      &public,
 	})
 
 	if err2 != nil {
