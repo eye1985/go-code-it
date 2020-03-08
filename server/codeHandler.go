@@ -4,14 +4,13 @@ import (
 	"codepocket/database"
 	"codepocket/feature"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"net/http"
 	"strconv"
 )
 
-func startAndHitsPerPage(r *http.Request) (startInt int, hitPerPageInt int, err string) {
+func startAndHitsPerPage(r *http.Request) (startInt int, hitPerPageInt int, err []error) {
 	start := r.URL.Query().Get("start")
 	hitPerPage := r.URL.Query().Get("hitPerPage")
 
@@ -20,23 +19,22 @@ func startAndHitsPerPage(r *http.Request) (startInt int, hitPerPageInt int, err 
 	}
 
 	startInt, sErr := strconv.Atoi(start)
-	if sErr != nil {
-		err += fmt.Sprintf("Cannot convert start at %v \n", sErr.Error())
-	}
-
 	hitPerPageInt, hErr := strconv.Atoi(hitPerPage)
-	if hErr != nil {
-		err += fmt.Sprintf("Cannot convert hits per page: %v \n", hErr.Error())
-	}
+
+	err = append(err, sErr)
+	err = append(err, hErr)
 
 	return startInt, hitPerPageInt, err
 }
 
 func getCodes(w http.ResponseWriter, r *http.Request) {
-	startInt, hitPerPageInt, errStr := startAndHitsPerPage(r)
-	if errStr != "" {
-		http.Error(w, errStr, http.StatusInternalServerError)
-		return
+	startInt, hitPerPageInt, errList := startAndHitsPerPage(r)
+
+	for _, err := range errList {
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	count, userAndCodes, err := database.SearchCodes(Db, "", int16(startInt), int16(hitPerPageInt))
@@ -58,10 +56,12 @@ func getUserCodes(w http.ResponseWriter, r *http.Request) {
 	userIdInt, err := strconv.Atoi(userId)
 	userIdUint := uint(userIdInt)
 
-	startInt, hitPerPageInt, errStr := startAndHitsPerPage(r)
-	if errStr != "" {
-		http.Error(w, errStr, http.StatusInternalServerError)
-		return
+	startInt, hitPerPageInt, errList := startAndHitsPerPage(r)
+	for _, err := range errList {
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	count, userAndCodes, err := database.SearchUserCodes(Db, "", &userIdUint, int16(startInt), int16(hitPerPageInt))
