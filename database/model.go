@@ -81,6 +81,7 @@ type CodeAndLanguage struct {
 	Public      bool   `json:"public"`
 	Username    string `json:"username"`
 	Language    string `json:"language"`
+	LanguageId  int16  `json:"languageId"`
 }
 
 type IdAndLanguage struct {
