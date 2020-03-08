@@ -4,17 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func QueryUserCodes(db *gorm.DB, userId int) (*[]Code, error) {
-	var codes []Code
-
-	if dbs := db.Where("user_id = ?", userId).
-		Find(&codes); dbs.Error != nil {
-		return nil, dbs.Error
-	}
-
-	return &codes, nil
-}
-
 func QueryUserCode(db *gorm.DB, userId int, codeId int) (*CodeAndLanguage, error) {
 	var code CodeAndLanguage
 

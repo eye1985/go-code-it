@@ -39,3 +39,20 @@ func TestSearchCodes(t *testing.T) {
 
 	log.Printf("Returned result: %v", *count)
 }
+
+func TestSearchUserCodes(t *testing.T) {
+	resPerPage := int16(10)
+	offset := int16(1)
+	userId := uint(1)
+
+	count, userAndCodes, err := SearchUserCodes(tdb, "", &userId, offset, resPerPage)
+	if err != nil {
+		t.Fatalf("Should retrieve codes, but got %v", err)
+	}
+
+	if *count != 68 && len(userAndCodes) != 2 {
+		t.Fatalf("Should return 2, but got %v", *count)
+	}
+
+	log.Printf("Returned result: %v", *count)
+}

@@ -46,7 +46,7 @@ func RoutesV1() *mux.Router {
 	codes.HandleFunc("/{codeId}", authHandle(updateUserCode)).Methods("PUT")
 	codes.HandleFunc("/{codeId}", authHandle(deleteUserCode)).Methods("DELETE")
 
-	api.Use(logger)
+	api.Use(logger, asJson)
 
 	return router
 }

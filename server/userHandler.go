@@ -3,7 +3,6 @@ package server
 import (
 	"codepocket/database"
 	"codepocket/encrypt"
-	"codepocket/enum"
 	"codepocket/validate"
 	"encoding/json"
 	"fmt"
@@ -70,7 +69,6 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(&user)
@@ -97,7 +95,6 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&u)
 }
@@ -127,7 +124,6 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }
@@ -160,7 +156,6 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&u)
@@ -174,7 +169,6 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&users)

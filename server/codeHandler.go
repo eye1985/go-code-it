@@ -2,30 +2,40 @@ package server
 
 import (
 	"codepocket/database"
-	"codepocket/enum"
+	"codepocket/feature"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"math"
 	"net/http"
 	"strconv"
 )
 
-func getCodes(w http.ResponseWriter, r *http.Request) {
-	var pagination database.Pagination
-
+func startAndHitsPerPage(r *http.Request) (startInt int, hitPerPageInt int, err string) {
 	start := r.URL.Query().Get("start")
 	hitPerPage := r.URL.Query().Get("hitPerPage")
 
-	startInt, err := strconv.Atoi(start)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if hitPerPage == "" {
+		hitPerPage = "10"
 	}
 
-	hitPerPageInt, err := strconv.Atoi(hitPerPage)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	startInt, sErr := strconv.Atoi(start)
+	if sErr != nil {
+		err += fmt.Sprintf("Cannot convert start at %v \n", sErr.Error())
+	}
+
+	hitPerPageInt, hErr := strconv.Atoi(hitPerPage)
+	if hErr != nil {
+		err += fmt.Sprintf("Cannot convert hits per page: %v \n", hErr.Error())
+	}
+
+	return startInt, hitPerPageInt, err
+}
+
+func getCodes(w http.ResponseWriter, r *http.Request) {
+	startInt, hitPerPageInt, errStr := startAndHitsPerPage(r)
+	if errStr != "" {
+		http.Error(w, errStr, http.StatusInternalServerError)
 		return
 	}
 
@@ -36,55 +46,34 @@ func getCodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	totalPage := math.Ceil(float64(*count) / float64(hitPerPageInt))
-	currentPage := math.Ceil(float64(startInt) / float64(hitPerPageInt))
-	next := startInt + hitPerPageInt
-	prev := startInt - hitPerPageInt
+	pagination := feature.Pagination(float64(*count), float64(hitPerPageInt), float64(startInt), userAndCodes)
 
-	if len(userAndCodes) == 0 {
-		totalPage = 0
-		currentPage = 0
-	}
-
-	if prev < 0 {
-		prev = 0
-	}
-
-	pagination = database.Pagination{
-		Codes:       userAndCodes,
-		CurrentPage: int16(currentPage),
-		NextStart:   int16(next),
-		PrevStart:   int16(prev),
-		TotalPage:   int16(totalPage),
-	}
-
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
-
 	json.NewEncoder(w).Encode(&pagination)
 }
 
 func getUserCodes(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId := params["userId"]
-	i, err := strconv.Atoi(userId)
+	userIdInt, err := strconv.Atoi(userId)
+	userIdUint := uint(userIdInt)
 
+	startInt, hitPerPageInt, errStr := startAndHitsPerPage(r)
+	if errStr != "" {
+		http.Error(w, errStr, http.StatusInternalServerError)
+		return
+	}
+
+	count, userAndCodes, err := database.SearchUserCodes(Db, "", &userIdUint, int16(startInt), int16(hitPerPageInt))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	user, uerr := database.QueryUserCodes(Db, i)
+	pagination := feature.Pagination(float64(*count), float64(hitPerPageInt), float64(startInt), userAndCodes)
 
-	if uerr != nil {
-		http.Error(w, uerr.Error(), http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(&user)
+	json.NewEncoder(w).Encode(&pagination)
 }
 
 func getUserCode(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +118,6 @@ func getUserCode(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&code)
@@ -182,7 +170,6 @@ func createUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&createdCode)
@@ -220,7 +207,6 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(&updatedCode)
@@ -250,8 +236,6 @@ func deleteUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
-
 	json.NewEncoder(w).Encode(&deleteCode)
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"codepocket/database"
 	"codepocket/encrypt"
-	"codepocket/enum"
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -52,7 +51,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 
 	userIdStruct := struct {
@@ -116,6 +114,5 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 
-	w.Header().Set(enum.ContentType, enum.AppJson)
 	w.WriteHeader(http.StatusOK)
 }
