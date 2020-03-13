@@ -181,6 +181,7 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 
 	codeTitle := r.FormValue("title")
 	codeDesc := r.FormValue("description")
+	languageId := r.FormValue("languageId")
 	code := r.FormValue("code")
 
 	codeIdInt, err := strconv.Atoi(codeId)
@@ -195,10 +196,19 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	languageIdInt, err := strconv.Atoi(languageId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	languageIdUint := uint(languageIdInt)
+
 	updatedCode, err := database.UpdateUserCode(Db, codeIdInt, userIdInt, &database.Code{
 		Title:       codeTitle,
 		Description: codeDesc,
 		Code:        &code,
+		LanguageID:  &languageIdUint,
 	})
 
 	if err != nil {
@@ -207,7 +217,6 @@ func updateUserCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
 	json.NewEncoder(w).Encode(&updatedCode)
 }
 
