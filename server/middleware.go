@@ -38,7 +38,7 @@ func auth(next http.Handler) http.Handler {
 		uidStr := fmt.Sprintf("%v", uid)
 
 		if !ok || uidStr != userId {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -56,7 +56,7 @@ func authHandle(next http.HandlerFunc) http.HandlerFunc {
 		uidStr := fmt.Sprintf("%v", uid)
 
 		if !ok || uidStr != userId {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -70,7 +70,7 @@ func logoutAuth(next http.Handler) http.Handler {
 		uid, ok := session.Values["auth"]
 
 		if !ok || uid == 0 {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
